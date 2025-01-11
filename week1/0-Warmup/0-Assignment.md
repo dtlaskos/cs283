@@ -36,6 +36,12 @@ Please provide answers to these questions using markdown notation and place them
 
 3. Please provide a link to the repository you are using for this class.
 
+https://github.com/dtlaskos/cs283/tree/main
+
 4. Briefly describe what you want to get out of this class.
 
+First and foremost I want to just want to get a good grade. Next I would like to sharpen my skills with C, Linux, and Git.
+
 5. Briefly describe any concerns you might be having with being successful in this class (if any).
+
+I found CS281 a bit hard to follow (mostly due to outside of class issues I was having last quarter when I took it), so I hope that I can do better in this course.
