@@ -215,4 +215,6 @@ int main(int argc, char *argv[]){
 //          is a good practice, after all we know from main() that 
 //          the buff variable will have exactly 50 bytes?
 //  
-//          PLACE YOUR ANSWER HERE
+//          By explicitly passing the length, the function can check bounds and
+//          prevent buffer overflows, making the code safer and less prone to 
+//          vulnerabilities
