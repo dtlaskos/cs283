@@ -17,7 +17,53 @@ int  count_words(char *, int, int);
 
 int setup_buff(char *buff, char *user_str, int len){
     //TODO: #4:  Implement the setup buff as per the directions
-    return 0; //for now just so the code compiles. 
+    if (len > BUFFER_SZ) {
+        // The user-supplied string is too large
+        return -1;
+    }
+
+    char *src = user_str; // Pointer to traverse the user-supplied string
+    char *dest = buff;    // Pointer to populate the internal buffer
+    int user_str_len = 0; // Tracks the length of the user-supplied string
+    int prev_was_space = 0; // Tracks if the previous character was whitespace
+
+    // Process the user-supplied string
+    while (*src != '\0') {
+        if (*src == ' ' || *src == '\t') {
+            // Handle whitespace
+            if (!prev_was_space) {
+                *dest = ' ';      // Add a single space to the buffer
+                dest++;
+                user_str_len++;
+                if (user_str_len > len) {
+                    // The user-supplied string exceeded buffer size
+                    return -1;
+                }
+            }
+            prev_was_space = 1; // Mark that the current char is whitespace
+        } else {
+            // Copy non-whitespace character
+            *dest = *src;
+            dest++;
+            user_str_len++;
+            if (user_str_len > len) {
+                // The user-supplied string exceeded buffer size
+                return -1;
+            }
+            prev_was_space = 0; // Reset whitespace tracker
+        }
+        src++; // Move to the next character in the user string
+    }
+
+    // Fill the remainder of the buffer with '.'
+    while (user_str_len < BUFFER_SZ) {
+        *dest = '.';
+        dest++;
+        user_str_len++;
+    }
+
+    // Return the length of the user-supplied string
+    return (dest - buff);
 }
 
 void print_buff(char *buff, int len){
@@ -40,6 +86,40 @@ int count_words(char *buff, int len, int str_len){
 
 //ADD OTHER HELPER FUNCTIONS HERE FOR OTHER REQUIRED PROGRAM OPTIONS
 
+void reverse_string(char *buff, int str_len) {
+    printf("Reversed String: ");
+    for (int i = str_len - 1; i >= 0; i--) {
+        putchar(buff[i]);
+    }
+    putchar('\n');
+}
+
+void word_print(char *buff, int str_len) {
+    printf("Word Print\n----------\n");
+    int word_index = 1;
+    int word_len = 0;
+    int start = 0;
+    for (int i = 0; i <= str_len; i++) {
+        if (buff[i] == ' ' || buff[i] == '\0') {
+            if (word_len > 0) {
+                printf("%d. ", word_index);
+                for (int j = start; j < start + word_len; j++) {
+                    putchar(buff[j]);
+                }
+                printf(" (%d)\n", word_len);
+                word_index++;
+            }
+            word_len = 0;
+        } else {
+            if (word_len == 0) {
+                start = i;
+            }
+            word_len++;
+        }
+    }
+}
+
+
 int main(int argc, char *argv[]){
 
     char *buff;             //placehoder for the internal buffer
@@ -49,7 +129,9 @@ int main(int argc, char *argv[]){
     int  user_str_len;      //length of user supplied string
 
     //TODO:  #1. WHY IS THIS SAFE, aka what if arv[1] does not exist?
-    //      PLACE A COMMENT BLOCK HERE EXPLAINING
+    //      The || operator uses short-circuit evaluation. If argc < 2 is true,
+    //      the second condition (*argv[1] != '-') is not evaluated, avoiding 
+    //      an invalid memory access.
     if ((argc < 2) || (*argv[1] != '-')){
         usage(argv[0]);
         exit(1);
@@ -66,7 +148,7 @@ int main(int argc, char *argv[]){
     //WE NOW WILL HANDLE THE REQUIRED OPERATIONS
 
     //TODO:  #2 Document the purpose of the if statement below
-    //      PLACE A COMMENT BLOCK HERE EXPLAINING
+    //      If there are < 3 arguments, print proper usage and exit
     if (argc < 3){
         usage(argv[0]);
         exit(1);
@@ -77,8 +159,10 @@ int main(int argc, char *argv[]){
     //TODO:  #3 Allocate space for the buffer using malloc and
     //          handle error if malloc fails by exiting with a 
     //          return code of 99
-    // CODE GOES HERE FOR #3
-
+    buff = malloc(BUFFER_SZ);
+    if(buff == NULL){
+        exit(99);
+    }
 
     user_str_len = setup_buff(buff, input_string, BUFFER_SZ);     //see todos
     if (user_str_len < 0){
@@ -98,6 +182,22 @@ int main(int argc, char *argv[]){
 
         //TODO:  #5 Implement the other cases for 'r' and 'w' by extending
         //       the case statement options
+        case 'r':
+            reverse_string(buff, user_str_len);
+            break;
+
+        case 'w':
+            word_print(buff, user_str_len);
+            break;
+
+        case 'x':
+            if (argc < 5) {
+                printf("Error: Missing arguments for -x option.\n");
+                exit(2);
+            }
+            printf("Not implemented!\n");
+            exit(3);
+
         default:
             usage(argv[0]);
             exit(1);
@@ -105,6 +205,7 @@ int main(int argc, char *argv[]){
 
     //TODO:  #6 Dont forget to free your buffer before exiting
     print_buff(buff,BUFFER_SZ);
+    free(buff);
     exit(0);
 }
 
