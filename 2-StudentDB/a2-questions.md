@@ -5,7 +5,7 @@ Please answer the following questions and submit in your repo for the second ass
 
 1. In this assignment I asked you provide an implementation for the `get_student(...)` function because I think it improves the overall design of the database application.   After you implemented your solution do you agree that externalizing `get_student(...)` into it's own function is a good design strategy?  Briefly describe why or why not.
 
-    > **Answer**:  _start here_
+    > **Answer**:  I think it is a good design strategy because implementing it on its own allows for its own error checking and and I/O operations, while the other functions can focus on their own tasks.
 
 2. Another interesting aspect of the `get_student(...)` function is how its function prototype requires the caller to provide the storage for the `student_t` structure:
 
@@ -39,7 +39,7 @@ Please answer the following questions and submit in your repo for the second ass
     ```
     Can you think of any reason why the above implementation would be a **very bad idea** using the C programming language?  Specifically, address why the above code introduces a subtle bug that could be hard to identify at runtime? 
 
-    > **ANSWER:** _start here_
+    > **ANSWER:** In C, variables declared inside a function (like student_t student;) are allocated on the stack. When the function returns, the stack memory for those variables is automatically reclaimed. The pointer returned (&student) now points to invalid memory, creating a dangling pointer. Any subsequent use of this pointer leads to bad behavior.
 
 3. Another way the `get_student(...)` function could be implemented is as follows:
 
@@ -72,7 +72,7 @@ Please answer the following questions and submit in your repo for the second ass
     ```
     In this implementation the storage for the student record is allocated on the heap using `malloc()` and passed back to the caller when the function returns. What do you think about this alternative implementation of `get_student(...)`?  Address in your answer why it work work, but also think about any potential problems it could cause.  
     
-    > **ANSWER:** _start here_  
+    > **ANSWER:** While the alternate implementation works, it shifts significant responsibility to the caller and introduces risks like leaks, fragmentation, and lower performance. The original approach is safer for C. If dynamic allocation is unavoidable, using this function with a free_student(student_t *) utility can lower some risks, but the first design remains better for most use cases. 
 
 
 4. Lets take a look at how storage is managed for our simple database. Recall that all student records are stored on disk using the layout of the `student_t` structure (which has a size of 64 bytes).  Lets start with a fresh database by deleting the `student.db` file using the command `rm ./student.db`.  Now that we have an empty database lets add a few students and see what is happening under the covers.  Consider the following sequence of commands:
@@ -102,11 +102,11 @@ Please answer the following questions and submit in your repo for the second ass
 
     - Please explain why the file size reported by the `ls` command was 128 bytes after adding student with ID=1, 256 after adding student with ID=3, and 4160 after adding the student with ID=64? 
 
-        > **ANSWER:** _start here_
+        > **ANSWER:** The ls -l command shows the logical size of the file, which is the total number of bytes the file claims to have, including "holes" (unwritten regions). ID=1: The first student is written at offset 1 * 64 = 64 bytes. The file expands to 128 bytes (likely due to alignment or metadata). ID=3: The next student is written at offset 3 * 64 = 192 bytes, expanding the file to 256 bytes. ID=64: The student is written at offset 64 * 64 = 4096 bytes (4KB boundary), expanding the file to 4160 bytes (4096 + 64).
 
     -   Why did the total storage used on the disk remain unchanged when we added the student with ID=1, ID=3, and ID=63, but increased from 4K to 8K when we added the student with ID=64? 
 
-        > **ANSWER:** _start here_
+        > **ANSWER:** The du command shows the physical disk space allocated, which depends on the filesystem’s block size (typically 4KB). ID=1, 3, 63: These writes stay within the first 4KB block. du reports 4KB (1 block). ID=64: The write crosses into the second 4KB block. du reports 8KB (2 blocks).
 
     - Now lets add one more student with a large student ID number  and see what happens:
 
@@ -119,4 +119,4 @@ Please answer the following questions and submit in your repo for the second ass
         ```
         We see from above adding a student with a very large student ID (ID=99999) increased the file size to 6400000 as shown by `ls` but the raw storage only increased to 12K as reported by `du`.  Can provide some insight into why this happened?
 
-        > **ANSWER:**  _start here_
+        > **ANSWER:**  Logical Size: 99999 * 64 = 6,399,936 bytes (rounded to 6,400,000 by ls). Physical Usage: Only the blocks containing actual data (students 1, 3, 63, 64, 99999) are allocated. The gaps between IDs are sparse holes (unallocated blocks). Result: du reports 12KB (3 blocks: 4KB for IDs 1-63, 4KB for ID 64, and 4KB for ID 99999).
